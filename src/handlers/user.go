@@ -37,31 +37,7 @@ func (h *UserHandler) GetUserHandler(ctx *gin.Context) {
 }
 
 func (h *UserHandler) PostUserHandler(ctx *gin.Context) {
-	var request *entities.User
-	response := new(helpers.Response)
-
-	err := ctx.ShouldBindJSON(request)
-	if err != nil {
-		for _, e := range err.(validator.ValidationErrors) {
-			helpers.ResponseBadRequest(ctx, response, e)
-			return
-		}
-	}
-
-	err = h.userService.CreateUser(request)
-	if err != nil {
-		helpers.ResponseBadRequest(ctx, response, err)
-		return
-	}
-
-	response.Status = http.StatusCreated
-	response.Message = "OK"
-	response.Data = request
-	ctx.JSON(response.Status, response)
-}
-
-func (h *UserHandler) PatchUserHandler(ctx *gin.Context) {
-	var request *entities.User
+	var request entities.User
 	response := new(helpers.Response)
 
 	err := ctx.ShouldBindJSON(&request)
@@ -72,20 +48,44 @@ func (h *UserHandler) PatchUserHandler(ctx *gin.Context) {
 		}
 	}
 
-	err = h.userService.UpdateUser(request, request.Id)
+	err = h.userService.CreateUser(&request)
+	if err != nil {
+		helpers.ResponseBadRequest(ctx, response, err)
+		return
+	}
+
+	response.Status = http.StatusCreated
+	response.Message = "Created"
+	response.Data = request
+	ctx.JSON(response.Status, response)
+}
+
+func (h *UserHandler) PatchUserHandler(ctx *gin.Context) {
+	var request entities.User
+	response := new(helpers.Response)
+
+	err := ctx.ShouldBindJSON(&request)
+	if err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			helpers.ResponseBadRequest(ctx, response, e)
+			return
+		}
+	}
+
+	err = h.userService.UpdateUser(&request, request.Id)
 	if err != nil {
 		helpers.ResponseBadRequest(ctx, response, err)
 		return
 	}
 
 	response.Status = http.StatusOK
-	response.Message = "OK"
+	response.Message = "Updated"
 	response.Data = "Success Updated"
 	ctx.JSON(http.StatusOK, response)
 }
 
 func (h *UserHandler) DeleteUserHandler(ctx *gin.Context) {
-	var request *entities.User
+	var request entities.User
 	response := &helpers.Response{}
 
 	err := ctx.ShouldBindJSON(&request)
@@ -96,14 +96,14 @@ func (h *UserHandler) DeleteUserHandler(ctx *gin.Context) {
 		}
 	}
 
-	err = h.userService.DeleteUser(request)
+	err = h.userService.DeleteUser(&request)
 	if err != nil {
 		helpers.ResponseBadRequest(ctx, response, err)
 		return
 	}
 
 	response.Data = "User deleted!"
-	response.Message = "OK"
+	response.Message = "Deleted"
 	response.Status = http.StatusOK
 	ctx.JSON(response.Status, response)
 }

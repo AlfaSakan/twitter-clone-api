@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"github.com/AlfaSakan/twitter-clone-api/src/entities"
+	"github.com/AlfaSakan/twitter-clone-api/src/helpers"
 	"gorm.io/gorm"
 )
 
@@ -25,6 +26,7 @@ func (r *UserRepository) FindUser(user *entities.User) error {
 }
 
 func (r *UserRepository) CreateUser(user *entities.User) error {
+	user.Id = helpers.GenerateId()
 	return r.db.Debug().Create(user).Error
 }
 
@@ -33,5 +35,5 @@ func (r *UserRepository) UpdateUser(user *entities.User, id string) error {
 }
 
 func (r *UserRepository) DeleteUser(user *entities.User) error {
-	return r.db.Debug().Delete(user).Error
+	return r.db.Debug().Where(user).Delete(user).Error
 }
