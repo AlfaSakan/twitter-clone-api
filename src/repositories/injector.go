@@ -12,3 +12,8 @@ func InitializedUserRepository(db *gorm.DB) *UserRepository {
 	wire.Build(NewUserRepository)
 	return nil
 }
+
+func InitializedTweetRepository(db *gorm.DB) *TweetRepository {
+	wire.Build(NewTweetRepository)
+	return nil
+}

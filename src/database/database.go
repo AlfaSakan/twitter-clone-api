@@ -5,14 +5,15 @@ import (
 	"os"
 
 	"github.com/AlfaSakan/twitter-clone-api/src/entities"
-	"github.com/AlfaSakan/twitter-clone-api/src/repositories"
 	"github.com/AlfaSakan/twitter-clone-api/src/services"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 type DbConnection struct {
-	UserService services.IUserService
+	UserService    services.IUserService
+	TweetService   services.ITweetService
+	SessionService services.ISessionService
 }
 
 func NewDBConnection() *DbConnection {
@@ -23,7 +24,6 @@ func NewDBConnection() *DbConnection {
 	dbDatabase := os.Getenv("DB_DATABASE")
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPassword, dbDatabase, dbPort)
-	// dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPassword, dbHost, dbPort, dbDatabase)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -32,11 +32,17 @@ func NewDBConnection() *DbConnection {
 	}
 
 	db.AutoMigrate(&entities.User{})
+	db.AutoMigrate(&entities.Tweet{})
+	db.AutoMigrate(&entities.TweetLike{})
+	db.AutoMigrate(&entities.Session{})
 
-	ur := repositories.InitializedUserRepository(db)
-	us := services.InitializedUserService(ur)
+	us := services.InitializedUserService(db)
+	ts := services.InitializedTweetService(db)
+	ss := services.InitializedSessionService(db)
 
 	return &DbConnection{
-		UserService: us,
+		UserService:    us,
+		TweetService:   ts,
+		SessionService: ss,
 	}
 }

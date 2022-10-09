@@ -8,11 +8,28 @@ package services
 
 import (
 	"github.com/AlfaSakan/twitter-clone-api/src/repositories"
+	"gorm.io/gorm"
 )
 
 // Injectors from injector.go:
 
-func InitializedUserService(ur repositories.IUserRepository) *UserService {
-	userService := NewUserService(ur)
+func InitializedUserService(db *gorm.DB) *UserService {
+	userRepository := repositories.NewUserRepository(db)
+	userService := NewUserService(userRepository)
 	return userService
+}
+
+func InitializedTweetService(db *gorm.DB) *TweetService {
+	tweetRepository := repositories.NewTweetRepository(db)
+	tweetLikeRepository := repositories.NewTweetLikeRepository(db)
+	userRepository := repositories.NewUserRepository(db)
+	tweetService := NewTweetService(tweetRepository, tweetLikeRepository, userRepository)
+	return tweetService
+}
+
+func InitializedSessionService(db *gorm.DB) *SessionService {
+	sessionRepository := repositories.NewSessionRepository(db)
+	userRepository := repositories.NewUserRepository(db)
+	sessionService := NewSessionService(sessionRepository, userRepository)
+	return sessionService
 }

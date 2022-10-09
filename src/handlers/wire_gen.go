@@ -16,3 +16,13 @@ func InitializedUserHandler(us services.IUserService) *UserHandler {
 	userHandler := NewUserHandler(us)
 	return userHandler
 }
+
+func InitializedTweetHandler(us services.ITweetService) *TweetHandler {
+	tweetHandler := NewTweetHandler(us)
+	return tweetHandler
+}
+
+func InitializedSessionHandler(us services.IUserService, ss services.ISessionService) *SessionHandler {
+	sessionHandler := NewSessionHandler(ss, us)
+	return sessionHandler
+}

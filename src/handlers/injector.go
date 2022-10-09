@@ -13,3 +13,15 @@ func InitializedUserHandler(us services.IUserService) *UserHandler {
 
 	return nil
 }
+
+func InitializedTweetHandler(us services.ITweetService) *TweetHandler {
+	wire.Build(NewTweetHandler)
+
+	return nil
+}
+
+func InitializedSessionHandler(us services.IUserService, ss services.ISessionService) *SessionHandler {
+	wire.Build(NewSessionHandler)
+
+	return nil
+}

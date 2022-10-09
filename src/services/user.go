@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/AlfaSakan/twitter-clone-api/src/entities"
+	"github.com/AlfaSakan/twitter-clone-api/src/helpers"
 	"github.com/AlfaSakan/twitter-clone-api/src/repositories"
 )
 
@@ -25,6 +26,8 @@ func (s *UserService) FindUser(user *entities.User) error {
 }
 
 func (s *UserService) CreateUser(user *entities.User) error {
+	user.Id = helpers.GenerateId()
+
 	return s.userRepository.CreateUser(user)
 }
 

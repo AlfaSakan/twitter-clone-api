@@ -16,3 +16,8 @@ func InitializedUserRepository(db *gorm.DB) *UserRepository {
 	userRepository := NewUserRepository(db)
 	return userRepository
 }
+
+func InitializedTweetRepository(db *gorm.DB) *TweetRepository {
+	tweetRepository := NewTweetRepository(db)
+	return tweetRepository
+}

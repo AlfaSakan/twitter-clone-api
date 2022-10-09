@@ -26,7 +26,7 @@ func (h *UserHandler) GetUserHandler(ctx *gin.Context) {
 
 	err := h.userService.FindUser(user)
 	if err != nil {
-		helpers.ResponseBadRequest(ctx, response, err)
+		helpers.ResponseNotFound(ctx, response, err)
 		return
 	}
 
