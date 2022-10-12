@@ -36,7 +36,6 @@ func GenerateToken(data *CustomClaim, expireTime int64) (string, error) {
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	token, err := tokenClaims.SignedString([]byte(privateKey))
-
 	if err != nil {
 		return "", err
 	}

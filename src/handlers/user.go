@@ -5,6 +5,7 @@ import (
 
 	"github.com/AlfaSakan/twitter-clone-api/src/entities"
 	"github.com/AlfaSakan/twitter-clone-api/src/helpers"
+	"github.com/AlfaSakan/twitter-clone-api/src/schemas"
 	"github.com/AlfaSakan/twitter-clone-api/src/services"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -18,12 +19,24 @@ func NewUserHandler(userService services.IUserService) *UserHandler {
 	return &UserHandler{userService}
 }
 
+func (h *UserHandler) GetUserMeHandler(ctx *gin.Context) {
+	response := new(helpers.Response)
+
+	userToken, _ := ctx.Get("User")
+	user := userToken.(*entities.User)
+
+	response.Message = "OK"
+	response.Status = http.StatusOK
+	response.Data = user
+	ctx.JSON(http.StatusOK, response)
+}
+
 func (h *UserHandler) GetUserHandler(ctx *gin.Context) {
+	response := new(helpers.Response)
+
 	id := ctx.Param("id")
 
 	user := &entities.User{Id: id}
-	response := new(helpers.Response)
-
 	err := h.userService.FindUser(user)
 	if err != nil {
 		helpers.ResponseNotFound(ctx, response, err)
@@ -61,7 +74,7 @@ func (h *UserHandler) PostUserHandler(ctx *gin.Context) {
 }
 
 func (h *UserHandler) PatchUserHandler(ctx *gin.Context) {
-	var request entities.User
+	var request schemas.UpdateUserSchema
 	response := new(helpers.Response)
 
 	err := ctx.ShouldBindJSON(&request)
@@ -72,7 +85,10 @@ func (h *UserHandler) PatchUserHandler(ctx *gin.Context) {
 		}
 	}
 
-	err = h.userService.UpdateUser(&request, request.Id)
+	userToken, _ := ctx.Get("User")
+	userId := userToken.(*entities.User).Id
+
+	err = h.userService.UpdateUser(&request, userId)
 	if err != nil {
 		helpers.ResponseBadRequest(ctx, response, err)
 		return

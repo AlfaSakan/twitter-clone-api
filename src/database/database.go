@@ -11,6 +11,7 @@ import (
 )
 
 type DbConnection struct {
+	DB             *gorm.DB
 	UserService    services.IUserService
 	TweetService   services.ITweetService
 	SessionService services.ISessionService
@@ -41,6 +42,7 @@ func NewDBConnection() *DbConnection {
 	ss := services.InitializedSessionService(db)
 
 	return &DbConnection{
+		DB:             db,
 		UserService:    us,
 		TweetService:   ts,
 		SessionService: ss,

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/AlfaSakan/twitter-clone-api/src/database"
 	"github.com/AlfaSakan/twitter-clone-api/src/handlers"
+	"github.com/AlfaSakan/twitter-clone-api/src/middlewares"
 	"github.com/AlfaSakan/twitter-clone-api/src/routes"
 	"github.com/gin-gonic/gin"
 	cors "github.com/rs/cors/wrapper/gin"
@@ -17,6 +18,8 @@ func main() {
 	v1 := router.Group("/v1")
 
 	conn := database.NewDBConnection()
+
+	v1.Use(middlewares.DeserializeUser(conn.DB))
 
 	userHandler := handlers.InitializedUserHandler(conn.UserService)
 	tweetHandler := handlers.InitializedTweetHandler(conn.TweetService)
