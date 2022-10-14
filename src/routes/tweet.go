@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/AlfaSakan/twitter-clone-api/src/handlers"
+	"github.com/AlfaSakan/twitter-clone-api/src/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,7 +29,7 @@ func Tweet(r *gin.RouterGroup, h *handlers.TweetHandler) {
 	r.DELETE(TWEET_ROUTE, h.DeleteTweetHandler)
 
 	// likes tweet
-	r.PATCH(fmt.Sprintf("%s/like", TWEET_ROUTE), h.LikeTweetHandler)
+	r.PATCH(fmt.Sprintf("%s/like", TWEET_ROUTE), middlewares.RequireUser(), h.LikeTweetHandler)
 
 	// get tweet like
 	r.POST(fmt.Sprintf("%s/like", TWEET_ROUTE), h.GetLikeTweetHandler)

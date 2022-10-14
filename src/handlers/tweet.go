@@ -22,8 +22,14 @@ func NewTweetHandler(tweetService services.ITweetService) *TweetHandler {
 func (h *TweetHandler) GetAllTweetsHandler(ctx *gin.Context) {
 	tweets := &[]entities.Tweet{}
 	response := new(helpers.Response)
+	user := new(entities.User)
 
-	err := h.tweetService.GetAllTweets(tweets)
+	userToken, ok := ctx.Get("User")
+	if ok {
+		user = userToken.(*entities.User)
+	}
+
+	err := h.tweetService.GetAllTweets(tweets, user.Id)
 	if err != nil {
 		helpers.ResponseBadRequest(ctx, response, err)
 		return
@@ -47,7 +53,13 @@ func (h *TweetHandler) FindAllTweetsHandler(ctx *gin.Context) {
 		}
 	}
 
-	err = h.tweetService.FindListTweets(&tweet, tweets)
+	userId := ""
+
+	if userToken, ok := ctx.Get("User"); ok {
+		userId = userToken.(*entities.User).Id
+	}
+
+	err = h.tweetService.FindListTweets(&tweet, tweets, userId)
 	if err != nil {
 		helpers.ResponseBadRequest(ctx, response, err)
 		return
@@ -60,12 +72,19 @@ func (h *TweetHandler) FindAllTweetsHandler(ctx *gin.Context) {
 }
 
 func (h *TweetHandler) GetTweetByIdHandler(ctx *gin.Context) {
+	userId := ""
+
 	id := ctx.Param("id")
+
+	userToken, ok := ctx.Get("User")
+	if ok {
+		userId = userToken.(*entities.User).Id
+	}
 
 	tweet := &entities.Tweet{Id: id}
 	response := new(helpers.Response)
 
-	err := h.tweetService.FindTweet(tweet)
+	err := h.tweetService.FindTweet(tweet, userId)
 	if err != nil {
 		helpers.ResponseNotFound(ctx, response, err)
 		return
@@ -126,6 +145,9 @@ func (h *TweetHandler) DeleteTweetHandler(ctx *gin.Context) {
 }
 
 func (h *TweetHandler) LikeTweetHandler(ctx *gin.Context) {
+	userToken, _ := ctx.Get("User")
+	userId := userToken.(*entities.User).Id
+
 	var request entities.TweetLike
 	response := new(helpers.Response)
 
@@ -134,6 +156,8 @@ func (h *TweetHandler) LikeTweetHandler(ctx *gin.Context) {
 		helpers.ResponseBadRequest(ctx, response, err)
 		return
 	}
+
+	request.UserId = userId
 
 	err = h.tweetService.LikeTweetService(&request)
 	if err != nil {

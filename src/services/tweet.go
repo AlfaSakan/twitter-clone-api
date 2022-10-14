@@ -8,13 +8,13 @@ import (
 )
 
 type ITweetService interface {
-	FindListTweets(request *schemas.TweetRequestByUserId, tweets *[]entities.Tweet) error
-	FindTweet(tweet *entities.Tweet) error
+	FindListTweets(request *schemas.TweetRequestByUserId, tweets *[]entities.Tweet, userId string) error
+	FindTweet(tweet *entities.Tweet, userId string) error
 	CreateTweet(tweetRequest schemas.TweetRequest) (*entities.Tweet, error)
 	DeleteTweet(tweetRequest schemas.TweetRequestById) error
 	LikeTweetService(request *entities.TweetLike) error
 	FindLikeTweetService(request *entities.TweetLike) error
-	GetAllTweets(tweets *[]entities.Tweet) error
+	GetAllTweets(tweets *[]entities.Tweet, userId string) error
 }
 
 type TweetService struct {
@@ -31,7 +31,7 @@ func NewTweetService(
 	return &TweetService{tweetRepository, tweetLikeRepo, userRepo}
 }
 
-func (s *TweetService) GetAllTweets(tweets *[]entities.Tweet) error {
+func (s *TweetService) GetAllTweets(tweets *[]entities.Tweet, userId string) error {
 	userMap := map[string]entities.User{}
 
 	err := s.tweetRepository.GetAllTweets(tweets)
@@ -40,16 +40,19 @@ func (s *TweetService) GetAllTweets(tweets *[]entities.Tweet) error {
 	}
 
 	for i, tw := range *tweets {
-		tweetLike := entities.TweetLike{
-			TweetId: tw.Id,
-			UserId:  tw.UserId,
-		}
-		e := s.tweetLikeRepo.FindLike(&tweetLike)
-		if e != nil {
-			(*tweets)[i].IsLike = false
-		}
+		if userId != "" {
+			tweetLike := entities.TweetLike{
+				TweetId: tw.Id,
+				UserId:  userId,
+			}
 
-		(*tweets)[i].IsLike = tweetLike.IsLike
+			e := s.tweetLikeRepo.FindLike(&tweetLike)
+			if e != nil {
+				(*tweets)[i].IsLike = false
+			}
+
+			(*tweets)[i].IsLike = tweetLike.IsLike
+		}
 
 		user := entities.User{
 			Id: tw.UserId,
@@ -66,11 +69,13 @@ func (s *TweetService) GetAllTweets(tweets *[]entities.Tweet) error {
 	return nil
 }
 
-func (s *TweetService) FindListTweets(request *schemas.TweetRequestByUserId, tweets *[]entities.Tweet) error {
+func (s *TweetService) FindListTweets(request *schemas.TweetRequestByUserId, tweets *[]entities.Tweet, userId string) error {
 	tweet := &entities.Tweet{
 		UserId:  request.UserId,
 		Content: request.Content,
 	}
+
+	userInserted := map[string]entities.User{}
 
 	err := s.tweetRepository.FindListTweets(tweet, tweets)
 	if err != nil {
@@ -80,7 +85,7 @@ func (s *TweetService) FindListTweets(request *schemas.TweetRequestByUserId, twe
 	for i, tw := range *tweets {
 		tweetLike := entities.TweetLike{
 			TweetId: tw.Id,
-			UserId:  request.UserId,
+			UserId:  userId,
 		}
 		e := s.tweetLikeRepo.FindLike(&tweetLike)
 		if e != nil {
@@ -88,12 +93,25 @@ func (s *TweetService) FindListTweets(request *schemas.TweetRequestByUserId, twe
 		}
 
 		(*tweets)[i].IsLike = tweetLike.IsLike
+
+		if u, ok := userInserted[tw.UserId]; ok {
+			(*tweets)[i].User = u
+			continue
+		}
+
+		user := entities.User{
+			Id: tw.UserId,
+		}
+
+		s.userRepo.FindUser(&user)
+		(*tweets)[i].User = user
+		userInserted[user.Id] = user
 	}
 
 	return nil
 }
 
-func (s *TweetService) FindTweet(tweet *entities.Tweet) error {
+func (s *TweetService) FindTweet(tweet *entities.Tweet, userId string) error {
 	err := s.tweetRepository.FindTweet(tweet)
 	if err != nil {
 		return err
@@ -107,14 +125,14 @@ func (s *TweetService) FindTweet(tweet *entities.Tweet) error {
 
 	tweetLike := entities.TweetLike{
 		TweetId: tweet.Id,
-		UserId:  tweet.User.Id,
+		UserId:  userId,
 	}
 
 	err = s.tweetLikeRepo.FindLike(&tweetLike)
 	if err != nil {
 		tweet.IsLike = false
+		return nil
 	}
-
 	tweet.IsLike = tweetLike.IsLike
 	return nil
 }
@@ -149,8 +167,10 @@ func (s *TweetService) LikeTweetService(request *entities.TweetLike) error {
 
 	err := s.tweetLikeRepo.FindLike(request)
 	if err != nil {
-		s.tweetLikeRepo.CreateLike(request)
-
+		e = s.tweetLikeRepo.CreateLike(request)
+		if e != nil {
+			return e
+		}
 		tweet.Likes++
 		e = s.tweetRepository.UpdateTweetLikes(tweet)
 		if e != nil {

@@ -25,7 +25,7 @@ func (r *TweetLikeRepository) CreateLike(like *entities.TweetLike) error {
 }
 
 func (r *TweetLikeRepository) FindLike(like *entities.TweetLike) error {
-	return r.db.Where(like).First(like).Error
+	return r.db.Debug().Where(like).First(like).Error
 }
 
 func (r *TweetLikeRepository) UpdateLike(like *entities.TweetLike) error {
