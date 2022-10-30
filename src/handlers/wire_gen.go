@@ -26,3 +26,8 @@ func InitializedSessionHandler(us services.IUserService, ss services.ISessionSer
 	sessionHandler := NewSessionHandler(ss, us)
 	return sessionHandler
 }
+
+func InitializedReplyHandler(ts services.ITweetService, rs services.IReplyService) *ReplyHandler {
+	replyHandler := NewReplyHandler(rs, ts)
+	return replyHandler
+}

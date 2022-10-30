@@ -25,3 +25,7 @@ func ResponseNotFound(ctx *gin.Context, response *Response, err error) {
 	response.Data = ""
 	ctx.JSON(response.Status, response)
 }
+
+func (r *Response) SendJson(ctx *gin.Context) {
+	ctx.JSON(r.Status, r)
+}

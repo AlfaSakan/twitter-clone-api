@@ -31,7 +31,7 @@ func ReIssueAccessToken(db *gorm.DB, refreshToken string) (string, *entities.Use
 	user := entities.User{
 		Id: session.UserId,
 	}
-	err = userRepository.FindUser(&user)
+	_, err = userRepository.FindUser(&user)
 	if err != nil {
 		return "", nil
 	}

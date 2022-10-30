@@ -28,7 +28,7 @@ func (h *UserHandler) GetUserMeHandler(ctx *gin.Context) {
 	response.Message = "OK"
 	response.Status = http.StatusOK
 	response.Data = user
-	ctx.JSON(http.StatusOK, response)
+	response.SendJson(ctx)
 }
 
 func (h *UserHandler) GetUserHandler(ctx *gin.Context) {
@@ -37,16 +37,18 @@ func (h *UserHandler) GetUserHandler(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	user := &entities.User{Id: id}
-	err := h.userService.FindUser(user)
+	status, err := h.userService.FindUser(user)
 	if err != nil {
-		helpers.ResponseNotFound(ctx, response, err)
+		response.Status = status
+		response.Message = err.Error()
+		response.SendJson(ctx)
 		return
 	}
 
 	response.Message = "OK"
 	response.Status = http.StatusOK
 	response.Data = user
-	ctx.JSON(http.StatusOK, response)
+	response.SendJson(ctx)
 }
 
 func (h *UserHandler) PostUserHandler(ctx *gin.Context) {
@@ -61,16 +63,18 @@ func (h *UserHandler) PostUserHandler(ctx *gin.Context) {
 		}
 	}
 
-	err = h.userService.CreateUser(&request)
+	status, err := h.userService.CreateUser(&request)
 	if err != nil {
-		helpers.ResponseBadRequest(ctx, response, err)
+		response.Status = status
+		response.Message = err.Error()
+		response.SendJson(ctx)
 		return
 	}
 
 	response.Status = http.StatusCreated
 	response.Message = "Created"
 	response.Data = request
-	ctx.JSON(response.Status, response)
+	response.SendJson(ctx)
 }
 
 func (h *UserHandler) PatchUserHandler(ctx *gin.Context) {

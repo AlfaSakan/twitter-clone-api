@@ -1,6 +1,8 @@
 package services
 
 import (
+	"net/http"
+
 	"github.com/AlfaSakan/twitter-clone-api/src/entities"
 	"github.com/AlfaSakan/twitter-clone-api/src/helpers"
 	"github.com/AlfaSakan/twitter-clone-api/src/repositories"
@@ -9,12 +11,13 @@ import (
 
 type ITweetService interface {
 	FindListTweets(request *schemas.TweetRequestByUserId, tweets *[]entities.Tweet, userId string) error
-	FindTweet(tweet *entities.Tweet, userId string) error
+	FindTweet(tweet *entities.Tweet, userId string) (statusCode int, errorMessage error)
 	CreateTweet(tweetRequest schemas.TweetRequest) (*entities.Tweet, error)
 	DeleteTweet(tweetRequest schemas.TweetRequestById) error
 	LikeTweetService(request *entities.TweetLike) error
 	FindLikeTweetService(request *entities.TweetLike) error
 	GetAllTweets(tweets *[]entities.Tweet, userId string) error
+	AddReplyCounts(tweetId string) error
 }
 
 type TweetService struct {
@@ -111,16 +114,16 @@ func (s *TweetService) FindListTweets(request *schemas.TweetRequestByUserId, twe
 	return nil
 }
 
-func (s *TweetService) FindTweet(tweet *entities.Tweet, userId string) error {
+func (s *TweetService) FindTweet(tweet *entities.Tweet, userId string) (int, error) {
 	err := s.tweetRepository.FindTweet(tweet)
 	if err != nil {
-		return err
+		return http.StatusNotFound, err
 	}
 
 	tweet.User.Id = tweet.UserId
-	err = s.userRepo.FindUser(&tweet.User)
+	status, err := s.userRepo.FindUser(&tweet.User)
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	tweetLike := entities.TweetLike{
@@ -131,16 +134,17 @@ func (s *TweetService) FindTweet(tweet *entities.Tweet, userId string) error {
 	err = s.tweetLikeRepo.FindLike(&tweetLike)
 	if err != nil {
 		tweet.IsLike = false
-		return nil
+		return http.StatusOK, nil
 	}
 	tweet.IsLike = tweetLike.IsLike
-	return nil
+	return http.StatusOK, nil
 }
 
 func (s *TweetService) CreateTweet(tweetRequest schemas.TweetRequest) (*entities.Tweet, error) {
 	tweet := &entities.Tweet{
 		Content: tweetRequest.Content,
 		UserId:  tweetRequest.UserId,
+		TypeId:  tweetRequest.TypeId,
 	}
 
 	tweet.Id = helpers.GenerateId()
@@ -207,4 +211,19 @@ func (s *TweetService) LikeTweetService(request *entities.TweetLike) error {
 
 func (s *TweetService) FindLikeTweetService(request *entities.TweetLike) error {
 	return s.tweetLikeRepo.FindLike(request)
+}
+
+func (s *TweetService) AddReplyCounts(tweetId string) error {
+	tweet := entities.Tweet{
+		Id: tweetId,
+	}
+
+	err := s.tweetRepository.FindTweet(&tweet)
+	if err != nil {
+		return err
+	}
+
+	tweet.ReplyCounts++
+
+	return s.tweetRepository.IncrementReplyCounts(&tweet)
 }

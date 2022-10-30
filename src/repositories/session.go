@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"github.com/AlfaSakan/twitter-clone-api/src/entities"
+	"github.com/AlfaSakan/twitter-clone-api/src/helpers"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +21,13 @@ func NewSessionRepository(db *gorm.DB) *SessionRepository {
 }
 
 func (r *SessionRepository) FindSession(session *entities.Session) error {
-	return r.db.Where(&entities.Session{Id: session.Id}).Find(session).Error
+	err := r.db.Where(&entities.Session{Id: session.Id}).Find(session).Error
+
+	if err.Error() == "record not found" {
+		return helpers.SessionNotFound.With(session.Id)
+	}
+
+	return err
 }
 
 func (r *SessionRepository) CreateSession(session *entities.Session) error {

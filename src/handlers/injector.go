@@ -25,3 +25,9 @@ func InitializedSessionHandler(us services.IUserService, ss services.ISessionSer
 
 	return nil
 }
+
+func InitializedReplyHandler(ts services.ITweetService, rs services.IReplyService) *ReplyHandler {
+	wire.Build(NewReplyHandler)
+
+	return nil
+}

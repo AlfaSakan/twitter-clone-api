@@ -24,10 +24,12 @@ func main() {
 	userHandler := handlers.InitializedUserHandler(conn.UserService)
 	tweetHandler := handlers.InitializedTweetHandler(conn.TweetService)
 	sessionHandler := handlers.InitializedSessionHandler(conn.UserService, conn.SessionService)
+	replyHandler := handlers.InitializedReplyHandler(conn.TweetService, conn.ReplyService)
 
 	routes.User(v1, userHandler)
 	routes.Tweet(v1, tweetHandler)
 	routes.Session(v1, sessionHandler)
+	routes.Reply(v1, replyHandler)
 
 	router.Run(":8081")
 }

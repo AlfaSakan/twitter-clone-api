@@ -15,6 +15,7 @@ type DbConnection struct {
 	UserService    services.IUserService
 	TweetService   services.ITweetService
 	SessionService services.ISessionService
+	ReplyService   services.IReplyService
 }
 
 func NewDBConnection() *DbConnection {
@@ -36,15 +37,19 @@ func NewDBConnection() *DbConnection {
 	db.AutoMigrate(&entities.Tweet{})
 	db.AutoMigrate(&entities.TweetLike{})
 	db.AutoMigrate(&entities.Session{})
+	db.AutoMigrate(&entities.TweetType{})
+	db.AutoMigrate(&entities.TweetReply{})
 
 	us := services.InitializedUserService(db)
 	ts := services.InitializedTweetService(db)
 	ss := services.InitializedSessionService(db)
+	rs := services.InitializedReplyService(db)
 
 	return &DbConnection{
 		DB:             db,
 		UserService:    us,
 		TweetService:   ts,
 		SessionService: ss,
+		ReplyService:   rs,
 	}
 }

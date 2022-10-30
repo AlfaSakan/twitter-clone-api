@@ -1,6 +1,7 @@
 package services
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/AlfaSakan/twitter-clone-api/src/entities"
@@ -11,8 +12,8 @@ import (
 )
 
 type IUserService interface {
-	FindUser(user *entities.User) error
-	CreateUser(user *entities.User) error
+	FindUser(user *entities.User) (statusCode int, errorMessage error)
+	CreateUser(user *entities.User) (statusCode int, errorMessage error)
 	UpdateUser(user *schemas.UpdateUserSchema, id string) error
 	DeleteUser(user *entities.User) error
 }
@@ -25,28 +26,28 @@ func NewUserService(userRepository repositories.IUserRepository) *UserService {
 	return &UserService{userRepository}
 }
 
-func (s *UserService) FindUser(user *entities.User) error {
-	err := s.userRepository.FindUser(user)
+func (s *UserService) FindUser(user *entities.User) (int, error) {
+	status, err := s.userRepository.FindUser(user)
 	user.Password = ""
 
-	return err
+	return status, err
 }
 
-func (s *UserService) CreateUser(user *entities.User) error {
+func (s *UserService) CreateUser(user *entities.User) (int, error) {
 	user.Id = helpers.GenerateId()
 
 	password := []byte(user.Password)
 	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return http.StatusBadRequest, err
 	}
 
 	user.Password = string(hashedPassword)
 
-	err = s.userRepository.CreateUser(user)
+	status, err := s.userRepository.CreateUser(user)
 	user.Password = ""
 
-	return err
+	return status, err
 }
 
 func (s *UserService) UpdateUser(schema *schemas.UpdateUserSchema, id string) error {

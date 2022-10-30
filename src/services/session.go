@@ -1,6 +1,7 @@
 package services
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/AlfaSakan/twitter-clone-api/src/entities"
@@ -12,7 +13,7 @@ import (
 )
 
 type ISessionService interface {
-	Login(request *schemas.SessionRequest, user *entities.User, session *entities.Session) error
+	Login(request *schemas.SessionRequest, user *entities.User, session *entities.Session) (statusCode int, errorMessage error)
 	Logout(request *entities.Session) error
 	GenerateAccessRefresh(user *entities.User, session *entities.Session) (string, string, error)
 }
@@ -29,17 +30,17 @@ func NewSessionService(
 	return &SessionService{sessionRepository, userRepository}
 }
 
-func (s *SessionService) Login(request *schemas.SessionRequest, user *entities.User, session *entities.Session) error {
+func (s *SessionService) Login(request *schemas.SessionRequest, user *entities.User, session *entities.Session) (int, error) {
 	user.Username = request.Username
 
-	err := s.userRepository.FindUser(user)
+	status, err := s.userRepository.FindUser(user)
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password))
 	if err != nil {
-		return err
+		return http.StatusBadRequest, helpers.WrongPassword
 	}
 
 	session.Id = helpers.GenerateId()
@@ -47,7 +48,7 @@ func (s *SessionService) Login(request *schemas.SessionRequest, user *entities.U
 	session.UserAgent = request.UserAgent
 	session.UserId = user.Id
 
-	return s.sessionRepository.CreateSession(session)
+	return http.StatusCreated, s.sessionRepository.CreateSession(session)
 }
 
 func (s *SessionService) GenerateAccessRefresh(user *entities.User, session *entities.Session) (string, string, error) {

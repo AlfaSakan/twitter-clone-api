@@ -41,3 +41,13 @@ func InitializedSessionService(db *gorm.DB) *SessionService {
 
 	return nil
 }
+
+func InitializedReplyService(db *gorm.DB) *ReplyService {
+	wire.Build(
+		NewReplyService,
+		repositories.NewReplyRepository,
+		wire.Bind(new(repositories.IReplyRepository), new(*repositories.ReplyRepository)),
+	)
+
+	return nil
+}

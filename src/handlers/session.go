@@ -36,9 +36,10 @@ func (s *SessionHandler) PostSessionHandler(ctx *gin.Context) {
 
 	request.UserAgent = ctx.Request.UserAgent()
 
-	err = s.sessionService.Login(&request, &user, &session)
-	if err != nil {
-		helpers.ResponseBadRequest(ctx, response, err)
+	if status, err := s.sessionService.Login(&request, &user, &session); err != nil {
+		response.Message = err.Error()
+		response.Status = status
+		response.SendJson(ctx)
 		return
 	}
 
@@ -56,7 +57,7 @@ func (s *SessionHandler) PostSessionHandler(ctx *gin.Context) {
 		SessionId:    session.Id,
 	}
 
-	ctx.JSON(response.Status, response)
+	response.SendJson(ctx)
 }
 
 func (s *SessionHandler) DeleteSessionHandler(ctx *gin.Context) {

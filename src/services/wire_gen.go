@@ -33,3 +33,9 @@ func InitializedSessionService(db *gorm.DB) *SessionService {
 	sessionService := NewSessionService(sessionRepository, userRepository)
 	return sessionService
 }
+
+func InitializedReplyService(db *gorm.DB) *ReplyService {
+	replyRepository := repositories.NewReplyRepository(db)
+	replyService := NewReplyService(replyRepository)
+	return replyService
+}

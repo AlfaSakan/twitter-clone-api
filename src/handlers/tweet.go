@@ -84,9 +84,11 @@ func (h *TweetHandler) GetTweetByIdHandler(ctx *gin.Context) {
 	tweet := &entities.Tweet{Id: id}
 	response := new(helpers.Response)
 
-	err := h.tweetService.FindTweet(tweet, userId)
+	status, err := h.tweetService.FindTweet(tweet, userId)
 	if err != nil {
-		helpers.ResponseNotFound(ctx, response, err)
+		response.Status = status
+		response.Message = err.Error()
+		response.SendJson(ctx)
 		return
 	}
 
