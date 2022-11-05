@@ -25,11 +25,13 @@ func main() {
 	tweetHandler := handlers.InitializedTweetHandler(conn.TweetService)
 	sessionHandler := handlers.InitializedSessionHandler(conn.UserService, conn.SessionService)
 	replyHandler := handlers.InitializedReplyHandler(conn.TweetService, conn.ReplyService)
+	retweetHandler := handlers.InitializedRetweetHandler(conn.TweetService, conn.RetweetService)
 
 	routes.User(v1, userHandler)
 	routes.Tweet(v1, tweetHandler)
 	routes.Session(v1, sessionHandler)
 	routes.Reply(v1, replyHandler)
+	routes.Retweet(v1, retweetHandler)
 
 	router.Run(":8081")
 }

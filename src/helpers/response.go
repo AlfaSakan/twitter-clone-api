@@ -16,14 +16,14 @@ func ResponseBadRequest(ctx *gin.Context, response *Response, err error) {
 	response.Message = err.Error()
 	response.Status = http.StatusBadRequest
 	response.Data = ""
-	ctx.JSON(response.Status, response)
+	response.SendJson(ctx)
 }
 
 func ResponseNotFound(ctx *gin.Context, response *Response, err error) {
 	response.Message = err.Error()
 	response.Status = http.StatusNotFound
 	response.Data = ""
-	ctx.JSON(response.Status, response)
+	response.SendJson(ctx)
 }
 
 func (r *Response) SendJson(ctx *gin.Context) {

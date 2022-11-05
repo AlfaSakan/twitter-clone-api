@@ -7,14 +7,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const REPLY_ROUTE = "/reply"
+const RETWEET_ROUTE = "/retweet"
 
-func Reply(r *gin.RouterGroup, h *handlers.ReplyHandler) {
+func Retweet(r *gin.RouterGroup, h *handlers.RetweetHandler) {
 	// get all reply by tweet id
-	r.GET(fmt.Sprintf("%s/:tweetId", REPLY_ROUTE), h.GetTweetRepliesByIdHandler)
+	r.GET(fmt.Sprintf("%s/:tweetId", RETWEET_ROUTE), h.GetRetweetsByIdHandler)
 
 	// create reply
-	r.POST(REPLY_ROUTE, h.PostReplyHandler)
+	r.POST(RETWEET_ROUTE, h.PostRetweetHandler)
 
 	// get one tweet by id
 	// r.GET(fmt.Sprintf("%s/:id", TWEET_ROUTE), h.GetTweetByIdHandler)

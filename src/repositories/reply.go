@@ -8,7 +8,7 @@ import (
 type IReplyRepository interface {
 	CreateReply(reply *entities.TweetReply) error
 	FindReplyId(reply *entities.TweetReply) error
-	FindRepliesId(tweetId string, reply *[]entities.TweetReply) error
+	FindRepliesId(tweetId string, replies *[]entities.TweetReply) error
 }
 
 type ReplyRepository struct {
@@ -27,6 +27,6 @@ func (rr *ReplyRepository) FindReplyId(reply *entities.TweetReply) error {
 	return rr.db.First(reply).Error
 }
 
-func (rr *ReplyRepository) FindRepliesId(tweetId string, reply *[]entities.TweetReply) error {
-	return rr.db.Where(&entities.TweetReply{TweetId: tweetId}).Find(reply).Error
+func (rr *ReplyRepository) FindRepliesId(tweetId string, replies *[]entities.TweetReply) error {
+	return rr.db.Where(&entities.TweetReply{TweetId: tweetId}).Find(replies).Error
 }

@@ -7,7 +7,8 @@ type TweetReply struct {
 }
 
 const (
-	TypeTweet   int32 = 1
-	TypeRetweet int32 = 2
-	TypeReply   int32 = 3
+	_ int32 = iota
+	TypeTweet
+	TypeRetweet
+	TypeReply
 )

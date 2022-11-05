@@ -15,9 +15,10 @@ type ITweetService interface {
 	CreateTweet(tweetRequest schemas.TweetRequest) (*entities.Tweet, error)
 	DeleteTweet(tweetRequest schemas.TweetRequestById) error
 	LikeTweetService(request *entities.TweetLike) error
-	FindLikeTweetService(request *entities.TweetLike) error
+	FindLikeTweetsService(request *schemas.TweetRequestByUserId) ([]entities.Tweet, error)
 	GetAllTweets(tweets *[]entities.Tweet, userId string) error
 	AddReplyCounts(tweetId string) error
+	AddRetweetCounts(tweetId string) error
 }
 
 type TweetService struct {
@@ -76,6 +77,7 @@ func (s *TweetService) FindListTweets(request *schemas.TweetRequestByUserId, twe
 	tweet := &entities.Tweet{
 		UserId:  request.UserId,
 		Content: request.Content,
+		TypeId:  request.TypeId,
 	}
 
 	userInserted := map[string]entities.User{}
@@ -125,6 +127,8 @@ func (s *TweetService) FindTweet(tweet *entities.Tweet, userId string) (int, err
 	if err != nil {
 		return status, err
 	}
+
+	tweet.User.Password = ""
 
 	tweetLike := entities.TweetLike{
 		TweetId: tweet.Id,
@@ -209,8 +213,34 @@ func (s *TweetService) LikeTweetService(request *entities.TweetLike) error {
 	return nil
 }
 
-func (s *TweetService) FindLikeTweetService(request *entities.TweetLike) error {
-	return s.tweetLikeRepo.FindLike(request)
+func (s *TweetService) FindLikeTweetsService(request *schemas.TweetRequestByUserId) ([]entities.Tweet, error) {
+	tweets := []entities.Tweet{}
+	tweetLike := &entities.TweetLike{
+		UserId: request.UserId,
+	}
+
+	tweetsLike := []entities.TweetLike{}
+
+	if err := s.tweetLikeRepo.FindTweetsLike(tweetLike, &tweetsLike); err != nil {
+		return tweets, err
+	}
+
+	if len(tweetsLike) == 0 {
+		return tweets, nil
+	}
+
+	for _, tl := range tweetsLike {
+		tweet := entities.Tweet{
+			Id:     tl.TweetId,
+			UserId: tl.UserId,
+		}
+
+		s.FindTweet(&tweet, request.UserId)
+
+		tweets = append(tweets, tweet)
+	}
+
+	return tweets, nil
 }
 
 func (s *TweetService) AddReplyCounts(tweetId string) error {
@@ -226,4 +256,19 @@ func (s *TweetService) AddReplyCounts(tweetId string) error {
 	tweet.ReplyCounts++
 
 	return s.tweetRepository.IncrementReplyCounts(&tweet)
+}
+
+func (s *TweetService) AddRetweetCounts(tweetId string) error {
+	tweet := entities.Tweet{
+		Id: tweetId,
+	}
+
+	err := s.tweetRepository.FindTweet(&tweet)
+	if err != nil {
+		return err
+	}
+
+	tweet.RetweetCounts++
+
+	return s.tweetRepository.IncrementRetweetCounts(&tweet)
 }

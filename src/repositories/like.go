@@ -10,6 +10,7 @@ type ITweetLikeRepository interface {
 	CreateLike(like *entities.TweetLike) error
 	UpdateLike(like *entities.TweetLike) error
 	UpdateIsLike(request *entities.TweetLike) error
+	FindTweetsLike(like *entities.TweetLike, tweetsLike *[]entities.TweetLike) error
 }
 
 type TweetLikeRepository struct {
@@ -31,6 +32,10 @@ func (r *TweetLikeRepository) FindLike(like *entities.TweetLike) error {
 	}
 
 	return r.db.Where(like).First(like).Error
+}
+
+func (r *TweetLikeRepository) FindTweetsLike(like *entities.TweetLike, tweetsLike *[]entities.TweetLike) error {
+	return r.db.Where(like).Find(tweetsLike).Error
 }
 
 func (r *TweetLikeRepository) UpdateLike(like *entities.TweetLike) error {

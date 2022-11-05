@@ -14,4 +14,5 @@ type TweetRequestByUserId struct {
 	UserId  string `json:"user_id" binding:"required"`
 	Content string `json:"content"`
 	Id      string `json:"id"`
+	TypeId  int32  `json:"type_id"`
 }

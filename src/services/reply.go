@@ -7,6 +7,7 @@ import (
 
 type IReplyService interface {
 	CreateReply(tweetId string, replyId string) error
+	FindReplies(tweetId string, replies *[]entities.TweetReply) error
 }
 
 type ReplyService struct {
@@ -24,4 +25,8 @@ func (rs *ReplyService) CreateReply(tweetId string, replyId string) error {
 	}
 
 	return rs.replyRepository.CreateReply(tweetReply)
+}
+
+func (rs *ReplyService) FindReplies(tweetId string, replies *[]entities.TweetReply) error {
+	return rs.replyRepository.FindRepliesId(tweetId, replies)
 }

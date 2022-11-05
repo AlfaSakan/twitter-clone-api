@@ -23,8 +23,10 @@ func NewSessionRepository(db *gorm.DB) *SessionRepository {
 func (r *SessionRepository) FindSession(session *entities.Session) error {
 	err := r.db.Where(&entities.Session{Id: session.Id}).Find(session).Error
 
-	if err.Error() == "record not found" {
-		return helpers.SessionNotFound.With(session.Id)
+	if err != nil {
+		if err.Error() == "record not found" {
+			return helpers.SessionNotFound.With(session.Id)
+		}
 	}
 
 	return err

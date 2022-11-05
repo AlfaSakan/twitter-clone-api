@@ -119,7 +119,7 @@ func (h *TweetHandler) PostTweetHandler(ctx *gin.Context) {
 	response.Status = http.StatusCreated
 	response.Message = "Created"
 	response.Data = tweet
-	ctx.JSON(response.Status, response)
+	response.SendJson(ctx)
 }
 
 func (h *TweetHandler) DeleteTweetHandler(ctx *gin.Context) {
@@ -174,7 +174,7 @@ func (h *TweetHandler) LikeTweetHandler(ctx *gin.Context) {
 }
 
 func (h *TweetHandler) GetLikeTweetHandler(ctx *gin.Context) {
-	var request entities.TweetLike
+	var request schemas.TweetRequestByUserId
 	response := new(helpers.Response)
 
 	err := ctx.ShouldBindJSON(&request)
@@ -183,7 +183,7 @@ func (h *TweetHandler) GetLikeTweetHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = h.tweetService.FindLikeTweetService(&request)
+	tweets, err := h.tweetService.FindLikeTweetsService(&request)
 	if err != nil {
 		helpers.ResponseNotFound(ctx, response, err)
 		return
@@ -191,6 +191,6 @@ func (h *TweetHandler) GetLikeTweetHandler(ctx *gin.Context) {
 
 	response.Message = "OK"
 	response.Status = http.StatusOK
-	response.Data = request
+	response.Data = tweets
 	ctx.JSON(http.StatusOK, response)
 }

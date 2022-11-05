@@ -51,3 +51,13 @@ func InitializedReplyService(db *gorm.DB) *ReplyService {
 
 	return nil
 }
+
+func InitializedRetweetService(db *gorm.DB) *RetweetService {
+	wire.Build(
+		NewRetweetService,
+		repositories.NewRetweetRepository,
+		wire.Bind(new(repositories.IRetweetRepository), new(*repositories.RetweetRepository)),
+	)
+
+	return nil
+}

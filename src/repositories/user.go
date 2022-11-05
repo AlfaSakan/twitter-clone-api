@@ -27,21 +27,29 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 func (r *UserRepository) FindUser(user *entities.User) (int, error) {
 	err := r.db.Where(user).First(user).Error
 
-	if err.Error() == "record not found" {
-		return http.StatusNotFound, helpers.UserNotFound.With(user.Id)
+	if err != nil {
+		if err.Error() == "record not found" && user.Id != "" {
+			return http.StatusNotFound, helpers.UserNotFound.With(user.Id)
+		}
+
+		if err.Error() == "record not found" && user.Username != "" {
+			return http.StatusNotFound, helpers.UsernameNotFound.With(user.Username)
+		}
+
+		return http.StatusBadRequest, err
 	}
 
-	return http.StatusBadRequest, err
+	return http.StatusOK, nil
 }
 
 func (r *UserRepository) CreateUser(user *entities.User) (int, error) {
 	err := r.db.Create(user).Error
 
-	if strings.Contains(err.Error(), "username") {
+	if err != nil && strings.Contains(err.Error(), "username") {
 		return http.StatusBadRequest, helpers.DuplicateUser.From(user.Username, err)
 	}
 
-	if strings.Contains(err.Error(), "email") {
+	if err != nil && strings.Contains(err.Error(), "email") {
 		return http.StatusBadRequest, helpers.DuplicateUser.From(user.Email, err)
 	}
 

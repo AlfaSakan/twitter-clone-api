@@ -39,3 +39,9 @@ func InitializedReplyService(db *gorm.DB) *ReplyService {
 	replyService := NewReplyService(replyRepository)
 	return replyService
 }
+
+func InitializedRetweetService(db *gorm.DB) *RetweetService {
+	retweetRepository := repositories.NewRetweetRepository(db)
+	retweetService := NewRetweetService(retweetRepository)
+	return retweetService
+}

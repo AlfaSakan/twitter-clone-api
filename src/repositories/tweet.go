@@ -15,6 +15,7 @@ type ITweetRepository interface {
 	UpdateTweetLikes(request *entities.Tweet) error
 	GetAllTweets(tweets *[]entities.Tweet) error
 	IncrementReplyCounts(request *entities.Tweet) error
+	IncrementRetweetCounts(request *entities.Tweet) error
 }
 
 type TweetRepository struct {
@@ -34,14 +35,14 @@ func (r *TweetRepository) FindListTweets(tweetRequest *entities.Tweet, tweets *[
 }
 
 func (r *TweetRepository) FindTweet(tweet *entities.Tweet) error {
-	err := r.db.Debug().First(tweet).Error
+	err := r.db.First(tweet).Error
 	if err != nil {
 		return err
 	}
 
 	tweetType := entities.TweetType{Id: tweet.TypeId}
 
-	err = r.db.Debug().First(&tweetType).Error
+	err = r.db.First(&tweetType).Error
 	if err != nil {
 		return err
 	}
@@ -88,6 +89,18 @@ func (r *TweetRepository) IncrementReplyCounts(request *entities.Tweet) error {
 
 	tweet := map[string]interface{}{
 		"reply_counts": request.ReplyCounts,
+	}
+
+	return r.db.Model(query).Where(query).Updates(tweet).Error
+}
+
+func (r *TweetRepository) IncrementRetweetCounts(request *entities.Tweet) error {
+	query := &entities.Tweet{
+		Id: request.Id,
+	}
+
+	tweet := map[string]interface{}{
+		"retweet_counts": request.RetweetCounts,
 	}
 
 	return r.db.Model(query).Where(query).Updates(tweet).Error

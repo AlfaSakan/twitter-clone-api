@@ -11,61 +11,62 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type ReplyHandler struct {
-	replyService services.IReplyService
-	tweetService services.ITweetService
+type RetweetHandler struct {
+	retweetService services.IRetweetService
+	tweetService   services.ITweetService
 }
 
-func NewReplyHandler(
-	replyService services.IReplyService,
+func NewRetweetHandler(
+	retweetService services.IRetweetService,
 	tweetService services.ITweetService,
-) *ReplyHandler {
-	return &ReplyHandler{replyService, tweetService}
+) *RetweetHandler {
+	return &RetweetHandler{
+		retweetService,
+		tweetService,
+	}
 }
 
-func (h *ReplyHandler) PostReplyHandler(ctx *gin.Context) {
-	var request schemas.PostReplySchema
+func (h *RetweetHandler) PostRetweetHandler(ctx *gin.Context) {
+	var request schemas.PostRetweetSchema
 	response := new(helpers.Response)
 
-	err := ctx.ShouldBindJSON(&request)
-	if err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
 			helpers.ResponseBadRequest(ctx, response, e)
 			return
 		}
 	}
 
-	reply, err := h.tweetService.CreateTweet(schemas.TweetRequest{
+	retweet, err := h.tweetService.CreateTweet(schemas.TweetRequest{
 		Content: request.Content,
 		UserId:  request.UserId,
-		TypeId:  entities.TypeReply,
+		TypeId:  entities.TypeRetweet,
 	})
 	if err != nil {
 		helpers.ResponseBadRequest(ctx, response, err)
-		return
 	}
 
-	err = h.replyService.CreateReply(request.TweetId, reply.Id)
+	err = h.retweetService.CreateRetweet(request.TweetId, retweet.Id)
 	if err != nil {
 		helpers.ResponseBadRequest(ctx, response, err)
 		return
 	}
 
-	err = h.tweetService.AddReplyCounts(request.TweetId)
+	err = h.tweetService.AddRetweetCounts(request.TweetId)
 	if err != nil {
 		helpers.ResponseBadRequest(ctx, response, err)
 		return
 	}
 
 	response.Status = http.StatusCreated
-	response.Message = "Created Reply"
-	response.Data = reply
-	ctx.JSON(response.Status, response)
+	response.Message = "Created Retweet"
+	response.Data = retweet
+	response.SendJson(ctx)
 }
 
-func (h *ReplyHandler) GetTweetRepliesByIdHandler(ctx *gin.Context) {
+func (h *RetweetHandler) GetRetweetsByIdHandler(ctx *gin.Context) {
 	tweetId := ctx.Param("tweetId")
-	replies := []entities.TweetReply{}
+	retweets := []entities.Retweet{}
 	tweets := []entities.Tweet{}
 	response := new(helpers.Response)
 	userId := ""
@@ -75,15 +76,15 @@ func (h *ReplyHandler) GetTweetRepliesByIdHandler(ctx *gin.Context) {
 		userId = userToken.(*entities.User).Id
 	}
 
-	if err := h.replyService.FindReplies(tweetId, &replies); err != nil {
+	if err := h.retweetService.FindRetweets(tweetId, &retweets); err != nil {
 		response.Message = err.Error()
 		response.Status = http.StatusBadRequest
 		response.SendJson(ctx)
 	}
 
-	for _, reply := range replies {
+	for _, retweet := range retweets {
 		tweet := entities.Tweet{
-			Id: reply.ReplyId,
+			Id: retweet.RetweetId,
 		}
 
 		_, err := h.tweetService.FindTweet(&tweet, userId)

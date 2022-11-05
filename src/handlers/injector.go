@@ -31,3 +31,9 @@ func InitializedReplyHandler(ts services.ITweetService, rs services.IReplyServic
 
 	return nil
 }
+
+func InitializedRetweetHandler(ts services.ITweetService, rs services.IRetweetService) *RetweetHandler {
+	wire.Build(NewRetweetHandler)
+
+	return nil
+}
