@@ -23,7 +23,8 @@ func InitializedTweetService(db *gorm.DB) *TweetService {
 	tweetRepository := repositories.NewTweetRepository(db)
 	tweetLikeRepository := repositories.NewTweetLikeRepository(db)
 	userRepository := repositories.NewUserRepository(db)
-	tweetService := NewTweetService(tweetRepository, tweetLikeRepository, userRepository)
+	retweetRepository := repositories.NewRetweetRepository(db)
+	tweetService := NewTweetService(tweetRepository, tweetLikeRepository, userRepository, retweetRepository)
 	return tweetService
 }
 

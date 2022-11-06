@@ -22,17 +22,19 @@ type ITweetService interface {
 }
 
 type TweetService struct {
-	tweetRepository repositories.ITweetRepository
-	tweetLikeRepo   repositories.ITweetLikeRepository
-	userRepo        repositories.IUserRepository
+	tweetRepository   repositories.ITweetRepository
+	tweetLikeRepo     repositories.ITweetLikeRepository
+	userRepo          repositories.IUserRepository
+	retweetRepository repositories.IRetweetRepository
 }
 
 func NewTweetService(
 	tweetRepository repositories.ITweetRepository,
 	tweetLikeRepo repositories.ITweetLikeRepository,
 	userRepo repositories.IUserRepository,
+	retweetRepository repositories.IRetweetRepository,
 ) *TweetService {
-	return &TweetService{tweetRepository, tweetLikeRepo, userRepo}
+	return &TweetService{tweetRepository, tweetLikeRepo, userRepo, retweetRepository}
 }
 
 func (s *TweetService) GetAllTweets(tweets *[]entities.Tweet, userId string) error {
@@ -56,6 +58,16 @@ func (s *TweetService) GetAllTweets(tweets *[]entities.Tweet, userId string) err
 			}
 
 			(*tweets)[i].IsLike = tweetLike.IsLike
+
+			if tw.TypeId == entities.TypeRetweet {
+				retweet := entities.Retweet{
+					RetweetId: tw.Id,
+				}
+				s.retweetRepository.FindRetweetId(&retweet)
+
+				(*tweets)[i].ReferenceId = retweet.TweetId
+			}
+
 		}
 
 		user := entities.User{

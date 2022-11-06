@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/AlfaSakan/twitter-clone-api/src/handlers"
+	"github.com/AlfaSakan/twitter-clone-api/src/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,10 +12,10 @@ const RETWEET_ROUTE = "/retweet"
 
 func Retweet(r *gin.RouterGroup, h *handlers.RetweetHandler) {
 	// get all reply by tweet id
-	r.GET(fmt.Sprintf("%s/:tweetId", RETWEET_ROUTE), h.GetRetweetsByIdHandler)
+	r.GET(fmt.Sprintf("%s/:tweetId", RETWEET_ROUTE), middlewares.RequireUser(), h.GetRetweetsByIdHandler)
 
 	// create reply
-	r.POST(RETWEET_ROUTE, h.PostRetweetHandler)
+	r.POST(RETWEET_ROUTE, middlewares.RequireUser(), h.PostRetweetHandler)
 
 	// get one tweet by id
 	// r.GET(fmt.Sprintf("%s/:id", TWEET_ROUTE), h.GetTweetByIdHandler)

@@ -2,7 +2,7 @@ package schemas
 
 type TweetRequest struct {
 	Content string `json:"content" binding:"required"`
-	UserId  string `json:"user_id" binding:"required"`
+	UserId  string `json:"user_id"`
 	TypeId  int32  `json:"type_id" binding:"required"`
 }
 

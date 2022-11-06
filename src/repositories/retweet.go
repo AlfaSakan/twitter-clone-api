@@ -24,7 +24,7 @@ func (rr *RetweetRepository) CreateRetweet(retweet *entities.Retweet) error {
 }
 
 func (rr *RetweetRepository) FindRetweetId(retweet *entities.Retweet) error {
-	return rr.db.First(retweet).Error
+	return rr.db.Debug().Where(retweet).First(retweet).Error
 }
 
 func (rr *RetweetRepository) FindRetweetsId(

@@ -23,7 +23,7 @@ func Tweet(r *gin.RouterGroup, h *handlers.TweetHandler) {
 	r.GET(fmt.Sprintf("%s/:id", TWEET_ROUTE), h.GetTweetByIdHandler)
 
 	// create tweet
-	r.POST(TWEET_ROUTE, h.PostTweetHandler)
+	r.POST(TWEET_ROUTE, middlewares.RequireUser(), h.PostTweetHandler)
 
 	// delete tweet
 	r.DELETE(TWEET_ROUTE, h.DeleteTweetHandler)

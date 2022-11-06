@@ -102,6 +102,13 @@ func (h *TweetHandler) PostTweetHandler(ctx *gin.Context) {
 	var request schemas.TweetRequest
 	response := new(helpers.Response)
 
+	user := new(entities.User)
+
+	userToken, ok := ctx.Get("User")
+	if ok {
+		user = userToken.(*entities.User)
+	}
+
 	err := ctx.ShouldBindJSON(&request)
 	if err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
@@ -109,6 +116,8 @@ func (h *TweetHandler) PostTweetHandler(ctx *gin.Context) {
 			return
 		}
 	}
+
+	request.UserId = user.Id
 
 	tweet, err := h.tweetService.CreateTweet(request)
 	if err != nil {

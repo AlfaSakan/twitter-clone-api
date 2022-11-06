@@ -30,6 +30,13 @@ func (h *RetweetHandler) PostRetweetHandler(ctx *gin.Context) {
 	var request schemas.PostRetweetSchema
 	response := new(helpers.Response)
 
+	user := new(entities.User)
+
+	userToken, ok := ctx.Get("User")
+	if ok {
+		user = userToken.(*entities.User)
+	}
+
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
 			helpers.ResponseBadRequest(ctx, response, e)
@@ -39,7 +46,7 @@ func (h *RetweetHandler) PostRetweetHandler(ctx *gin.Context) {
 
 	retweet, err := h.tweetService.CreateTweet(schemas.TweetRequest{
 		Content: request.Content,
-		UserId:  request.UserId,
+		UserId:  user.Id,
 		TypeId:  entities.TypeRetweet,
 	})
 	if err != nil {

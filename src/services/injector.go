@@ -21,10 +21,12 @@ func InitializedTweetService(db *gorm.DB) *TweetService {
 		repositories.NewTweetRepository,
 		repositories.NewTweetLikeRepository,
 		repositories.NewUserRepository,
+		repositories.NewRetweetRepository,
 		NewTweetService,
 		wire.Bind(new(repositories.ITweetRepository), new(*repositories.TweetRepository)),
 		wire.Bind(new(repositories.ITweetLikeRepository), new(*repositories.TweetLikeRepository)),
 		wire.Bind(new(repositories.IUserRepository), new(*repositories.UserRepository)),
+		wire.Bind(new(repositories.IRetweetRepository), new(*repositories.RetweetRepository)),
 	)
 
 	return nil
