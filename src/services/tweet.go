@@ -2,6 +2,7 @@ package services
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/AlfaSakan/twitter-clone-api/src/entities"
 	"github.com/AlfaSakan/twitter-clone-api/src/helpers"
@@ -15,7 +16,7 @@ type ITweetService interface {
 	CreateTweet(tweetRequest schemas.TweetRequest) (*entities.Tweet, error)
 	DeleteTweet(tweetRequest schemas.TweetRequestById) error
 	LikeTweetService(request *entities.TweetLike) error
-	FindLikeTweetsService(request *schemas.TweetRequestByUserId) ([]entities.Tweet, error)
+	FindLikeTweetsService(userId string) ([]entities.Tweet, error)
 	GetAllTweets(tweets *[]entities.Tweet, userId string) error
 	AddReplyCounts(tweetId string) error
 	AddRetweetCounts(tweetId string) error
@@ -111,6 +112,15 @@ func (s *TweetService) FindListTweets(request *schemas.TweetRequestByUserId, twe
 
 		(*tweets)[i].IsLike = tweetLike.IsLike
 
+		if tw.TypeId == entities.TypeRetweet {
+			retweet := entities.Retweet{
+				RetweetId: tw.Id,
+			}
+			s.retweetRepository.FindRetweetId(&retweet)
+
+			(*tweets)[i].ReferenceId = retweet.TweetId
+		}
+
 		if u, ok := userInserted[tw.UserId]; ok {
 			(*tweets)[i].User = u
 			continue
@@ -132,6 +142,15 @@ func (s *TweetService) FindTweet(tweet *entities.Tweet, userId string) (int, err
 	err := s.tweetRepository.FindTweet(tweet)
 	if err != nil {
 		return http.StatusNotFound, err
+	}
+
+	if tweet.TypeId == entities.TypeRetweet {
+		retweet := entities.Retweet{
+			RetweetId: tweet.Id,
+		}
+		s.retweetRepository.FindRetweetId(&retweet)
+
+		tweet.ReferenceId = retweet.TweetId
 	}
 
 	tweet.User.Id = tweet.UserId
@@ -201,6 +220,7 @@ func (s *TweetService) LikeTweetService(request *entities.TweetLike) error {
 	}
 
 	request.IsLike = !request.IsLike
+	request.CreatedAt = time.Now().UnixMilli()
 	err = s.tweetLikeRepo.UpdateIsLike(request)
 	if err != nil {
 		return err
@@ -225,10 +245,10 @@ func (s *TweetService) LikeTweetService(request *entities.TweetLike) error {
 	return nil
 }
 
-func (s *TweetService) FindLikeTweetsService(request *schemas.TweetRequestByUserId) ([]entities.Tweet, error) {
+func (s *TweetService) FindLikeTweetsService(userId string) ([]entities.Tweet, error) {
 	tweets := []entities.Tweet{}
 	tweetLike := &entities.TweetLike{
-		UserId: request.UserId,
+		UserId: userId,
 	}
 
 	tweetsLike := []entities.TweetLike{}
@@ -242,12 +262,17 @@ func (s *TweetService) FindLikeTweetsService(request *schemas.TweetRequestByUser
 	}
 
 	for _, tl := range tweetsLike {
+		if !tl.IsLike {
+			continue
+		}
+
 		tweet := entities.Tweet{
 			Id:     tl.TweetId,
 			UserId: tl.UserId,
 		}
 
-		s.FindTweet(&tweet, request.UserId)
+		s.FindTweet(&tweet, userId)
+		tweet.IsLike = true
 
 		tweets = append(tweets, tweet)
 	}

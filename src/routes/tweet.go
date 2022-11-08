@@ -32,5 +32,5 @@ func Tweet(r *gin.RouterGroup, h *handlers.TweetHandler) {
 	r.PATCH(fmt.Sprintf("%s/like", TWEET_ROUTE), middlewares.RequireUser(), h.LikeTweetHandler)
 
 	// get tweet like
-	r.POST(fmt.Sprintf("%s/like", TWEET_ROUTE), h.GetLikeTweetHandler)
+	r.GET(fmt.Sprintf("%s/like", TWEET_ROUTE), middlewares.RequireUser(), h.GetLikeTweetHandler)
 }

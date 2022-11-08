@@ -35,7 +35,7 @@ func (r *TweetLikeRepository) FindLike(like *entities.TweetLike) error {
 }
 
 func (r *TweetLikeRepository) FindTweetsLike(like *entities.TweetLike, tweetsLike *[]entities.TweetLike) error {
-	return r.db.Where(like).Find(tweetsLike).Error
+	return r.db.Where(like).Order("created_at DESC").Find(tweetsLike).Error
 }
 
 func (r *TweetLikeRepository) UpdateLike(like *entities.TweetLike) error {

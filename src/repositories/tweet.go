@@ -31,7 +31,7 @@ func (r *TweetRepository) GetAllTweets(tweets *[]entities.Tweet) error {
 }
 
 func (r *TweetRepository) FindListTweets(tweetRequest *entities.Tweet, tweets *[]entities.Tweet) error {
-	return r.db.Order("created_at ASC").Find(tweets, tweetRequest).Error
+	return r.db.Order("created_at ASC").Or("type_id = ?", entities.TypeRetweet).Find(tweets, tweetRequest).Error
 }
 
 func (r *TweetRepository) FindTweet(tweet *entities.Tweet) error {

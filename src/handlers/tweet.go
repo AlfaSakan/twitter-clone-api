@@ -183,16 +183,12 @@ func (h *TweetHandler) LikeTweetHandler(ctx *gin.Context) {
 }
 
 func (h *TweetHandler) GetLikeTweetHandler(ctx *gin.Context) {
-	var request schemas.TweetRequestByUserId
 	response := new(helpers.Response)
 
-	err := ctx.ShouldBindJSON(&request)
-	if err != nil {
-		helpers.ResponseBadRequest(ctx, response, err)
-		return
-	}
+	userToken, _ := ctx.Get("User")
+	userId := userToken.(*entities.User).Id
 
-	tweets, err := h.tweetService.FindLikeTweetsService(&request)
+	tweets, err := h.tweetService.FindLikeTweetsService(userId)
 	if err != nil {
 		helpers.ResponseNotFound(ctx, response, err)
 		return
