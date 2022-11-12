@@ -12,7 +12,7 @@ import (
 func main() {
 	router := gin.Default()
 
-	router.SetTrustedProxies([]string{"http://localhost:3000", "http://localhost:5173"})
+	// router.SetTrustedProxies([]string{"http://localhost:3000", "http://localhost:5173"})
 	router.Use(cors.AllowAll())
 
 	v1 := router.Group("/v1")

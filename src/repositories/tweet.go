@@ -27,7 +27,7 @@ func NewTweetRepository(db *gorm.DB) *TweetRepository {
 }
 
 func (r *TweetRepository) GetAllTweets(tweets *[]entities.Tweet) error {
-	return r.db.Select("*").Debug().Where(&entities.Tweet{TypeId: entities.TypeTweet}).Or("type_id = ?", entities.TypeRetweet).Order("created_at ASC").Find(tweets).Error
+	return r.db.Select("*").Where(&entities.Tweet{TypeId: entities.TypeTweet}).Or("type_id = ?", entities.TypeRetweet).Order("created_at ASC").Find(tweets).Error
 }
 
 func (r *TweetRepository) FindListTweets(tweetRequest *entities.Tweet, tweets *[]entities.Tweet) error {

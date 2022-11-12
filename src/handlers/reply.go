@@ -27,6 +27,9 @@ func (h *ReplyHandler) PostReplyHandler(ctx *gin.Context) {
 	var request schemas.PostReplySchema
 	response := new(helpers.Response)
 
+	userToken, _ := ctx.Get("User")
+	userId := userToken.(*entities.User).Id
+
 	err := ctx.ShouldBindJSON(&request)
 	if err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
@@ -37,7 +40,7 @@ func (h *ReplyHandler) PostReplyHandler(ctx *gin.Context) {
 
 	reply, err := h.tweetService.CreateTweet(schemas.TweetRequest{
 		Content: request.Content,
-		UserId:  request.UserId,
+		UserId:  userId,
 		TypeId:  entities.TypeReply,
 	})
 	if err != nil {

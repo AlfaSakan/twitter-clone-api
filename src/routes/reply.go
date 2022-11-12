@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/AlfaSakan/twitter-clone-api/src/handlers"
+	"github.com/AlfaSakan/twitter-clone-api/src/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +15,7 @@ func Reply(r *gin.RouterGroup, h *handlers.ReplyHandler) {
 	r.GET(fmt.Sprintf("%s/:tweetId", REPLY_ROUTE), h.GetTweetRepliesByIdHandler)
 
 	// create reply
-	r.POST(REPLY_ROUTE, h.PostReplyHandler)
+	r.POST(REPLY_ROUTE, middlewares.RequireUser(), h.PostReplyHandler)
 
 	// get one tweet by id
 	// r.GET(fmt.Sprintf("%s/:id", TWEET_ROUTE), h.GetTweetByIdHandler)
