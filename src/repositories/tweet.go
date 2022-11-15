@@ -13,7 +13,7 @@ type ITweetRepository interface {
 	FindTweetJoin(tweet *entities.Tweet) error
 	UpdateTweet(tweet *entities.Tweet) error
 	UpdateTweetLikes(request *entities.Tweet) error
-	GetAllTweets(tweets *[]entities.Tweet) error
+	GetAllTweets(tweets *[]entities.Tweet, offset int) error
 	IncrementReplyCounts(request *entities.Tweet) error
 	IncrementRetweetCounts(request *entities.Tweet) error
 }
@@ -26,12 +26,24 @@ func NewTweetRepository(db *gorm.DB) *TweetRepository {
 	return &TweetRepository{db}
 }
 
-func (r *TweetRepository) GetAllTweets(tweets *[]entities.Tweet) error {
-	return r.db.Select("*").Where(&entities.Tweet{TypeId: entities.TypeTweet}).Or("type_id = ?", entities.TypeRetweet).Order("created_at ASC").Find(tweets).Error
+func (r *TweetRepository) GetAllTweets(tweets *[]entities.Tweet, offset int) error {
+	return r.
+		db.Select("*").
+		Where(&entities.Tweet{TypeId: entities.TypeTweet}).
+		Or("type_id = ?", entities.TypeRetweet).
+		Order("created_at DESC").
+		Limit(10).
+		Offset(offset).
+		Find(tweets).
+		Error
 }
 
 func (r *TweetRepository) FindListTweets(tweetRequest *entities.Tweet, tweets *[]entities.Tweet) error {
-	return r.db.Order("created_at ASC").Or("type_id = ?", entities.TypeRetweet).Find(tweets, tweetRequest).Error
+	return r.db.
+		Order("created_at DESC").
+		Or("type_id = ?", entities.TypeRetweet).
+		Find(tweets, tweetRequest).
+		Error
 }
 
 func (r *TweetRepository) FindTweet(tweet *entities.Tweet) error {

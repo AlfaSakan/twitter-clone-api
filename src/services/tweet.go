@@ -1,7 +1,9 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/AlfaSakan/twitter-clone-api/src/entities"
@@ -14,10 +16,10 @@ type ITweetService interface {
 	FindListTweets(request *schemas.TweetRequestByUserId, tweets *[]entities.Tweet, userId string) error
 	FindTweet(tweet *entities.Tweet, userId string) (statusCode int, errorMessage error)
 	CreateTweet(tweetRequest schemas.TweetRequest) (*entities.Tweet, error)
-	DeleteTweet(tweetRequest schemas.TweetRequestById) error
+	DeleteTweet(tweetRequest schemas.TweetRequestById, userId string) error
 	LikeTweetService(request *entities.TweetLike) error
 	FindLikeTweetsService(userId string) ([]entities.Tweet, error)
-	GetAllTweets(tweets *[]entities.Tweet, userId string) error
+	GetAllTweets(tweets *[]entities.Tweet, userId string, page string) error
 	AddReplyCounts(tweetId string) error
 	AddRetweetCounts(tweetId string) error
 }
@@ -38,15 +40,26 @@ func NewTweetService(
 	return &TweetService{tweetRepository, tweetLikeRepo, userRepo, retweetRepository}
 }
 
-func (s *TweetService) GetAllTweets(tweets *[]entities.Tweet, userId string) error {
+func (s *TweetService) GetAllTweets(tweets *[]entities.Tweet, userId string, page string) error {
 	userMap := map[string]entities.User{}
 
-	err := s.tweetRepository.GetAllTweets(tweets)
+	offset := 0
+
+	pageNum, errConv := strconv.Atoi(page)
+	if errConv == nil {
+		offset = (pageNum - 1) * 10
+	}
+
+	err := s.tweetRepository.GetAllTweets(tweets, offset)
 	if err != nil {
 		return err
 	}
 
 	for i, tw := range *tweets {
+		if tw.Content == "" {
+			continue
+		}
+
 		if userId != "" {
 			tweetLike := entities.TweetLike{
 				TweetId: tw.Id,
@@ -187,10 +200,20 @@ func (s *TweetService) CreateTweet(tweetRequest schemas.TweetRequest) (*entities
 	return tweet, s.tweetRepository.CreateTweet(tweet)
 }
 
-func (s *TweetService) DeleteTweet(tweetRequest schemas.TweetRequestById) error {
+func (s *TweetService) DeleteTweet(tweetRequest schemas.TweetRequestById, userId string) error {
 	tweet := &entities.Tweet{
 		Id: tweetRequest.Id,
 	}
+
+	err := s.tweetRepository.FindTweet(tweet)
+	if err != nil {
+		return err
+	}
+
+	if tweet.UserId != userId {
+		return fmt.Errorf("you not own this tweet")
+	}
+
 	return s.tweetRepository.DeleteTweet(tweet)
 }
 

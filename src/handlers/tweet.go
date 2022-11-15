@@ -24,12 +24,14 @@ func (h *TweetHandler) GetAllTweetsHandler(ctx *gin.Context) {
 	response := new(helpers.Response)
 	user := new(entities.User)
 
+	page := ctx.DefaultQuery("page", "0")
+
 	userToken, ok := ctx.Get("User")
 	if ok {
 		user = userToken.(*entities.User)
 	}
 
-	err := h.tweetService.GetAllTweets(tweets, user.Id)
+	err := h.tweetService.GetAllTweets(tweets, user.Id, page)
 	if err != nil {
 		helpers.ResponseBadRequest(ctx, response, err)
 		return
@@ -132,6 +134,9 @@ func (h *TweetHandler) PostTweetHandler(ctx *gin.Context) {
 }
 
 func (h *TweetHandler) DeleteTweetHandler(ctx *gin.Context) {
+	userToken, _ := ctx.Get("User")
+	userId := userToken.(*entities.User).Id
+
 	var request schemas.TweetRequestById
 	response := &helpers.Response{}
 
@@ -143,7 +148,7 @@ func (h *TweetHandler) DeleteTweetHandler(ctx *gin.Context) {
 		}
 	}
 
-	err = h.tweetService.DeleteTweet(request)
+	err = h.tweetService.DeleteTweet(request, userId)
 	if err != nil {
 		helpers.ResponseBadRequest(ctx, response, err)
 		return

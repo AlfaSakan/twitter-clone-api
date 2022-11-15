@@ -26,7 +26,7 @@ func Tweet(r *gin.RouterGroup, h *handlers.TweetHandler) {
 	r.POST(TWEET_ROUTE, middlewares.RequireUser(), h.PostTweetHandler)
 
 	// delete tweet
-	r.DELETE(TWEET_ROUTE, h.DeleteTweetHandler)
+	r.DELETE(TWEET_ROUTE, middlewares.RequireUser(), h.DeleteTweetHandler)
 
 	// update likes tweet
 	r.PATCH(fmt.Sprintf("%s/like", TWEET_ROUTE), middlewares.RequireUser(), h.LikeTweetHandler)
